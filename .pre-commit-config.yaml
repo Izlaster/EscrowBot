@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: end-of-file-fixer
+        exclude: "migrations/"
+      - id: trailing-whitespace
+        exclude: "migrations/"
+      - id: check-yaml
+        exclude: "migrations/"
+      - id: check-json
+        exclude: "migrations/"
+      - id: check-toml
+        exclude: "migrations/"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.6
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        language: python
+        types: [python]
+        require_serial: true
+        verbose: true
