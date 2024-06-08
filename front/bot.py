@@ -5,12 +5,13 @@ import telebot
 from telebot import types
 
 bot = telebot.TeleBot("YOUR_BOT_TOKEN")
+OUR_TOKEN = ""
 
 user_data = {}
 
 def validate_date(date_text: str) -> bool:
     try:
-        datetime.strptime(date_text, '%H-%D-%M-%Y')
+        datetime.strptime(date_text, '%D.%M.%Y %M:%H')
         return True
     except ValueError:
         return False
@@ -33,7 +34,7 @@ def callback_query(call):
         bot.register_next_step_handler(call.message, process_deal_id)
     elif call.data == "accept_deal":
         bot.send_message(call.message.chat.id, "Введите адрес своего кошелька:")
-        bot.register_next_step_handler(call.message, process_deal_id)
+        bot.register_next_step_handler(call.message, process_deal_e_wallet)
 
 def process_deal_c_wallet(message):
     user_data[message.from_user.id]['customer_wallet'] = message.text
@@ -48,32 +49,35 @@ def process_deal_conditions(message):
 def process_deal_proofs(message):
     user_data[message.from_user.id]['deal_proofs'] = message.text
     bot.send_message(message.chat.id, "Введите адрес токена:")
-    bot.register_next_step_handler(message, process_deal_address)
+    bot.register_next_step_handler(message, process_token_address)
 
-def process_deal_address(message):
-    user_data[message.from_user.id]['deal_address'] = message.text
+def process_token_address(message):
+    user_data[message.from_user.id]['token_address'] = message.text
     bot.send_message(message.chat.id, "Введите количество токенов:")
-    bot.register_next_step_handler(message, process_deal_amount)
+    bot.register_next_step_handler(message, process_token_amount)
 
-def process_deal_amount(message):
-    user_data[message.from_user.id]['deal_amount'] = message.text
-    bot.send_message(message.chat.id, "Введите дату начала сделки (в формате ГГГГ-ММ-ДД):")
+def process_token_amount(message):
+    if user_data[message.from_user.id]['token_address'] == OUR_TOKEN:
+        user_data[message.from_user.id]['token_amount'] = float(message.text) + float(message.text) * 0.03
+    else:
+        user_data[message.from_user.id]['token_amount'] = float(message.text) + float(message.text) * 0.05
+    bot.send_message(message.chat.id, "Введите дату начала сделки (в формате ДД.ММ.ГГГГ М:Ч):")
     bot.register_next_step_handler(message, process_deal_start_date)
 
 def process_deal_start_date(message):
     start_date = message.text
     if not validate_date(start_date):
-        bot.send_message(message.chat.id, "Неверный формат даты. Пожалуйста, введите дату в формате ГГГГ-ММ-ДД:")
+        bot.send_message(message.chat.id, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ М:Ч")
         bot.register_next_step_handler(message, process_deal_start_date)
     else:
         user_data[message.from_user.id]['deal_start_date'] = start_date
-        bot.send_message(message.chat.id, "Введите дату завершения сделки (в формате ГГГГ-ММ-ДД):")
+        bot.send_message(message.chat.id, "Введите дату завершения сделки (в формате ДД.ММ.ГГГГ М:Ч):")
         bot.register_next_step_handler(message, process_deal_end_date)
 
 def process_deal_end_date(message):
     end_date = message.text
     if not validate_date(end_date):
-        bot.send_message(message.chat.id, "Неверный формат даты. Пожалуйста, введите дату в формате ГГГГ-ММ-ДД:")
+        bot.send_message(message.chat.id, "Неверный формат даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ М:Ч")
         bot.register_next_step_handler(message, process_deal_end_date)
     else:
         start_date = user_data[message.from_user.id]['deal_start_date']
@@ -91,8 +95,8 @@ def complete_customer_deal_creation(message):
         "user_id": message.from_user.id,
         "customer_wallet": user_data[user_id]['customer_wallet'],
         "deal_conditions": user_data[user_id]['deal_conditions'],
-        "deal_address": user_data[user_id]['deal_address'],
-        "deal_amount": user_data[user_id]['deal_amount'],
+        "token_address": user_data[user_id]['token_address'],
+        "token_amount": user_data[user_id]['token_amount'],
         "deal_start_date": user_data[user_id]['deal_start_date'],
         "deal_end_date": user_data[user_id]['deal_end_date'],
     }
