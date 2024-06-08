@@ -2,14 +2,14 @@ from web3 import Web3
 import json
 import time
 
-def check_transfers(sepolia_url, from_address, to_address, token_address, abi_path):
+def check_transfers(from_address, to_address, token_address, sepolia_url='https://sepolia-rpc.tokensoft.io'):
     web3 = Web3(Web3.HTTPProvider(sepolia_url))
 
     if not web3.isConnected():
         print("Не удалось подключиться к сети Sepolia")
         return None
 
-    with open(abi_path, 'r') as abi_file:
+    with open("src/token_abi.json", 'r') as abi_file:
         erc20_abi = json.load(abi_file)
 
     contract = web3.eth.contract(address=token_address, abi=erc20_abi)
