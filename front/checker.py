@@ -1,32 +1,45 @@
-import time
 from web3 import Web3
+import json
+import time
 
-def check_transactions(sepolia_rpc_url, from_address, our_address):
-    web3 = Web3(Web3.HTTPProvider(sepolia_rpc_url))
-    latest_block = web3.eth.get_block('latest')
-    latest_block_number = latest_block['number']
+def check_transfers(sepolia_url, from_address, to_address, token_address, abi_path):
+    web3 = Web3(Web3.HTTPProvider(sepolia_url))
 
-    # Получение времени текущего блока
-    latest_block_time = latest_block['timestamp']
+    if not web3.isConnected():
+        print("Не удалось подключиться к сети Sepolia")
+        return None
 
-    # Перемотка на 5 минут назад (300 секунд)
-    start_time = latest_block_time - 300
+    with open(abi_path, 'r') as abi_file:
+        erc20_abi = json.load(abi_file)
 
-    print(f'Checking transactions from block {latest_block_number} and earlier (last 5 minutes)')
+    contract = web3.eth.contract(address=token_address, abi=erc20_abi)
 
-    block = latest_block
-    while block['timestamp'] >= start_time:
-        block_number = block['number']
-        print(f'Checking block {block_number} at timestamp {block["timestamp"]}')
-        
-        for tx_hash in block['transactions']:
-            tx = web3.eth.get_transaction(tx_hash)
-            if tx['from'].lower() == from_address.lower() and tx['to'].lower() == our_address.lower():
-                print(f'Found transaction from {from_address} to {our_address}:')
-                print(f'  Transaction hash: {tx_hash}')
-                print(f'  Value: {web3.fromWei(tx["value"], "ether")} Ether')
-                print(f'  Timestamp: {block["timestamp"]}')
+    start_time = int(time.time()) - 300
 
-        if block_number == 0:
-            break
-        block = web3.eth.get_block(block_number - 1)
+    def get_transfers():
+        latest_block = web3.eth.get_block('latest')
+        start_block = latest_block['number'] - 50
+
+        transfers = []
+        for block_num in range(start_block, latest_block['number'] + 1):
+            block = web3.eth.get_block(block_num, full_transactions=True)
+            for tx in block.transactions:
+                if tx['to'] and tx['to'].lower() == token_address.lower():
+                    try:
+                        decoded_input = contract.decode_function_input(tx.input)
+                        if (decoded_input[0].fn_name == 'transfer' and
+                            decoded_input[1]['_to'].lower() == to_address.lower() and
+                            tx['from'].lower() == from_address.lower()):
+                            if block.timestamp >= start_time:
+                                transfers.append(decoded_input[1]['_value'])
+                    except Exception as e:
+                        continue
+
+        return transfers
+
+    transfers = get_transfers()
+    if transfers:
+        total_amount = sum(transfers)
+        return total_amount
+    else:
+        return 0
