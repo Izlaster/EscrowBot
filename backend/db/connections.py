@@ -2,6 +2,7 @@ from asyncio import current_task
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+from conf.settings import url_db
 from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_sessionmaker, create_async_engine
 
 
@@ -29,3 +30,6 @@ class DatabaseHelper:
             raise
         finally:
             await session.close()
+
+
+db_helper = DatabaseHelper(url=url_db)
