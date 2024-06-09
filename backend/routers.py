@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
-from schemas.schemas import BaseOrders, Deals, GetOrders, GetUser, Orders, User
+from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, GetUser, Orders, User
 from services import OrderService, UserService
 
 router = APIRouter(prefix="", tags=None)
@@ -26,7 +26,7 @@ async def create_new_order(new_order: BaseOrders):
 
 
 @router.post("/register_deal", response_model=Deals, status_code=status.HTTP_201_CREATED)
-async def create_new_deal(new_deal: Deals):
+async def create_new_deal(new_deal: BaseDeals):
     pass
 
 
