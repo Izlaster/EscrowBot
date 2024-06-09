@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
-from schemas.schemas import BaseOrders, GetOrders, GetUser, Orders, User, Deals
+from schemas.schemas import BaseOrders, Deals, GetOrders, GetUser, Orders, User
 from services import OrderService, UserService
 
 router = APIRouter(prefix="", tags=None)
@@ -30,7 +30,7 @@ async def create_new_deal(new_deal: Deals):
     pass
 
 
-@router.get("/order", response_model=Orders, status_code=status.HTTP_200_OK)
+@router.get("/order/{order_id}", response_model=Orders, status_code=status.HTTP_200_OK)
 async def order(order_id: UUID):
     # Тут надо получать полную инфу. То есть сразу кто создатель и исполнитель
     order = await OrderService.get_order(order_id=order_id)
