@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.types import TIMESTAMP, Integer, String, Text, Uuid
+from sqlalchemy.types import TIMESTAMP, Integer, String, Text, Uuid, Numeric
 
 
 class Base(DeclarativeBase):
@@ -27,7 +27,7 @@ class Orders(Base):
     deal_conditions: Mapped[str] = mapped_column(Text, nullable=False)
     # deal_proofs: Mapped[str] = mapped_column(Text, nullable=False)
     token_address: Mapped[str] = mapped_column(Text, nullable=False)
-    token_amount: Mapped[int] = mapped_column(Integer, nullable=False)
+    token_amount: Mapped[float] = mapped_column(Numeric(precision=10, scale=7), nullable=False)
     start_date: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
     end_date: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=datetime.now(UTC))
