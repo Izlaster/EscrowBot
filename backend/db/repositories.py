@@ -40,6 +40,7 @@ class OrdersRepository:
         customer_id: int,
         customer_wallet: str,
         deal_conditions: str,
+        deal_proofs: str,
         token_address: str,
         token_amount: int,
         start_date: datetime,
@@ -50,6 +51,7 @@ class OrdersRepository:
                 customer_id=customer_id,
                 customer_wallet=customer_wallet,
                 deal_conditions=deal_conditions,
+                deal_proofs=deal_proofs,
                 token_address=token_address,
                 token_amount=token_amount,
                 start_date=start_date,
@@ -74,6 +76,30 @@ class OrdersRepository:
             results = await session.execute(query)
 
             return results.scalars().all()
+
+    async def get_order_with_deal_wallets_token(self, **filters):
+        async with self._session_factory() as session:
+            query = (
+                select(Orders.customer_wallet, Deals.executor_wallet, Orders.token_address, Orders.token_amount)
+                .join(Deals, Orders.order_id == Deals.order_id)
+                .filter(Orders.order_id == filters["order_id"])
+            )
+
+            result = await session.execute(query)
+            result_row = result.fetchone()
+
+            if result_row is None:
+                return None
+
+            # Преобразуем строку результата в словарь
+            result_dict = {
+                "customer_wallet": result_row[0],
+                "executor_wallet": result_row[1],
+                "token_address": result_row[2],
+                "token_amount": result_row[3],
+            }
+
+            return result_dict
 
 
 class DealsRepository:
