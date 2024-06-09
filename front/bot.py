@@ -87,12 +87,12 @@ async def refresh_balance(message: types.Message, state: FSMContext):
                 customer_wallet = data_response['customer_wallet']
                 token_address = data_response['token_address']
                 
-                if token_amount == 1.03:
+                if token_amount == await check_transfers(API_KEY, customer_wallet, OUR_ADDRESS, token_address):
                     await message.answer("Баланс обновлен. Закидываю деньги в контракт.")
                     contract = ContractInteraction(OUR_ADDRESS, PRIVATE_KEY, OUR_CONTRACT, SEPOLIA_URL)
                     receipt = contract.createDeal(contract_id, 
-                                                    customer_wallet, "0x43d175438720C1f5D58f1465C1CD35b6F4d00Fc9", 
-                                                    token_address, 1.03 * 10 ** 18)
+                                                customer_wallet, "0x43d175438720C1f5D58f1465C1CD35b6F4d00Fc9", 
+                                                token_address, token_amount * 10 ** 18)
                     tx_link = f"https://sepolia.etherscan.io/tx/{receipt}"
                     await message.answer(f'Ссылка на транзакцию: \n {tx_link}')
                 else:
