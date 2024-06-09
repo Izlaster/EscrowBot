@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from db.repositories import deals_history_repository, deals_repository, orders_repository, user_repository
-from schemas.schemas import GetDeals, GetDealsHistory, GetOrders, GetUser, Orders, User
+from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, Orders, User
 
 
 class UserService:
@@ -17,7 +17,7 @@ class UserService:
 
 class OrderService:
     @staticmethod
-    async def create(data: Orders):
+    async def create(data: BaseOrders) -> Orders:
         date_format = "%d.%m.%Y %H:%M"
         data.start_date = datetime.strptime(data.start_date, date_format)
         data.end_date = datetime.strptime(data.end_date, date_format)
@@ -32,3 +32,9 @@ class OrderService:
     async def get_orders(**filters):
         orders = await orders_repository.get_orders(**filters)
         return [GetOrders.model_dump(order) for order in orders]
+
+
+class DealService:
+    @staticmethod
+    async def create(data: BaseDeals) -> Deals:
+        return await deals_repository.create(**data.model_dump())

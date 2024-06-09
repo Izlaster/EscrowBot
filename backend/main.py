@@ -4,12 +4,7 @@ from routers import router
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000",
-    "https://localhost:3000",
-    "http://172.23.29.54:3000",
-    "https://172.23.29.54:3000",
-]
+origins = ["http://localhost", "https://localhost"]
 
 app.add_middleware(
     CORSMiddleware,
