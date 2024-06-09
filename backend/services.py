@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from db.repositories import deals_history_repository, deals_repository, orders_repository, user_repository
-from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, GetOrderWithDeals, Orders, User
+from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, Orders, User
 
 
 class UserService:
