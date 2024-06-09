@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_scoped_session, async_ses
 
 
 class DatabaseHelper:
-    def __init__(self, url: str, echo: bool = False):
+    def __init__(self, url: str, echo: bool = True):
         self.engine = create_async_engine(url=url, echo=echo)
 
         self.session_factory = async_sessionmaker(

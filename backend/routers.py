@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
 from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, GetUser, Orders, User
@@ -33,8 +31,15 @@ async def create_new_deal(new_deal: BaseDeals):
 
 
 @router.get("/order/{order_id}", response_model=Orders, status_code=status.HTTP_200_OK)
-async def order(order_id: UUID):
+async def order(order_id: int):
     # Тут надо получать полную инфу. То есть сразу кто создатель и исполнитель
     order = await OrderService.get_order(order_id=order_id)
 
     return order
+
+
+@router.get("/order_with_deal_wallets/{order_id}")
+async def order_with_deal(order_id: int):
+    order_with_deal = await OrderService.get_order_with_deal_wallets_token(order_id=order_id)
+
+    return order_with_deal
