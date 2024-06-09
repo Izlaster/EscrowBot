@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "escrowbot"
+version = "0.1.0"
+description = ""
+authors = ["Izlaster <izmailovle0@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pytelegrambotapi = "^4.19.0"
+fastapi = "^0.111.0"
+requests = "^2.32.3"
+uvicorn = "^0.30.1"
+web3 = "^6.19.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
