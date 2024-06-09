@@ -1,49 +1,27 @@
 import json
+import requests
 import time
 
-from web3 import Web3
+async def check_transfers(api_key, from_address, to_address, token_address):
+    url = f"https://api-sepolia.etherscan.io/api?module=account&action=tokentx&address={from_address}&contractaddress={token_address}&startblock=0&endblock=999999999&sort=asc&apikey={api_key}"
 
+    response = requests.get(url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch token transfers: {response.status_code}")
 
-def check_transfers(from_address, to_address, token_address, sepolia_url="https://sepolia-rpc.tokensoft.io"):
-    web3 = Web3(Web3.HTTPProvider(sepolia_url))
+    data = response.json()
+    if data.get("status") != "1":
+        return 0
 
-    if not web3.isConnected():
-        print("Не удалось подключиться к сети Sepolia")
-        return None
+    transfers = []
+    for tx in data.get("result", []):
+        if tx["to"].lower() == to_address.lower():
+            timestamp = int(tx["timeStamp"])
+            if timestamp >= (time.time() - 300):  # Within the last 5 minutes
+                transfers.append(int(tx["value"]))
 
-    with open("src/token_abi.json", "r") as abi_file:
-        erc20_abi = json.load(abi_file)
-
-    contract = web3.eth.contract(address=token_address, abi=erc20_abi)
-
-    start_time = int(time.time()) - 300
-
-    def get_transfers():
-        latest_block = web3.eth.get_block("latest")
-        start_block = latest_block["number"] - 50
-
-        transfers = []
-        for block_num in range(start_block, latest_block["number"] + 1):
-            block = web3.eth.get_block(block_num, full_transactions=True)
-            for tx in block.transactions:
-                if tx["to"] and tx["to"].lower() == token_address.lower():
-                    try:
-                        decoded_input = contract.decode_function_input(tx.input)
-                        if (
-                            decoded_input[0].fn_name == "transfer"
-                            and decoded_input[1]["_to"].lower() == to_address.lower()
-                            and tx["from"].lower() == from_address.lower()
-                        ):
-                            if block.timestamp >= start_time:
-                                transfers.append(decoded_input[1]["_value"])
-                    except Exception as e:
-                        continue
-
-        return transfers
-
-    transfers = get_transfers()
     if transfers:
         total_amount = sum(transfers)
-        return total_amount
+        return total_amount / 10 ** 18
     else:
         return 0
