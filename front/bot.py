@@ -151,12 +151,12 @@ async def process_deal_end_date(message: types.Message, state: FSMContext):
     async with aiohttp.ClientSession() as session:
         async with session.post("http://127.0.0.1:8000/register_order", json=deal_info, timeout=10) as response:
             if response.status == 201:
-                await message.answer(f"Сделка успешно создана:\n{deal_info}")
+                data_response = await response.text()
+                await message.answer(f"Сделка успешно создана:\n{data_response}")
             else:
                 await message.answer("Произошла ошибка при создании сделки.")
     # response = requests.post("http://127.0.0.1:8000/register_order", json=deal_info, timeout=10)
 
-    await message.answer(f"Сделка создана:\n{deal_info}")
     await state.clear()
 
 
