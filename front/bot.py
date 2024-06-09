@@ -17,18 +17,18 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from checker import check_transfers
 from contract import *
 
-API_TOKEN = "6500720809:AAEvo7PhRABBy9BYShF3w-snSId0V5k60-Y"
-bot = Bot(token=API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-
-storage = MemoryStorage()
-dp = Dispatcher(storage=storage)
-
+API_TOKEN = ""
 OUR_CONTRACT = ""
 OUR_TOKEN = ""
 OUR_ADDRESS = ""
 SEPOLIA_URL = ""
 API_KEY = ""
 PRIVATE_KEY = ""
+
+bot = Bot(token=API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+
+storage = MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 user_data = {}
 
@@ -68,11 +68,18 @@ async def start(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Выберите действие")
     await message.answer("Выберите действие:", reply_markup=keyboard)
 
-
 @dp.message(F.text.lower() == "внести депозит в договор")
 async def deposit_order(message: types.Message, state: FSMContext):
     await message.answer("Введите ID договора:")
     await state.set_state(DepositStates.order_id)
+
+@dp.message(F.text.lower() == "вернутся в главное меню")
+async def back_to_start(message: types.Message):
+    kb = [
+        [types.KeyboardButton(text="Создать сделку"), types.KeyboardButton(text="Присоединиться к сделке"), types.KeyboardButton(text="Внести депозит в договор")],
+    ]
+    keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Выберите действие")
+    await message.answer("Выберите действие:", reply_markup=keyboard)
 
 @dp.message(F.text.lower() == "обновить баланс")
 async def refresh_balance(message: types.Message, state: FSMContext):
@@ -112,7 +119,9 @@ async def process_contract_id(message: types.Message, state: FSMContext):
                 await state.update_data(order_id=contract_id, data_response=data_response)
                 await message.answer(f"Нужно внести депозит {data_response['token_amount']}")
 
-                refresh_button = [[types.KeyboardButton(text="Обновить баланс")]]
+                refresh_button = [
+                    [types.KeyboardButton(text="Обновить баланс"), types.KeyboardButton(text="Вернутся в главное меню")]
+                ]
                 keyboard = types.ReplyKeyboardMarkup(keyboard=refresh_button, resize_keyboard=True, input_field_placeholder="Выберите действие")
                 await message.answer("Выберите действие:", reply_markup=keyboard)
             else:
