@@ -1,7 +1,6 @@
 from datetime import datetime
-from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 
 class User(BaseModel):
@@ -18,6 +17,7 @@ class BaseOrders(BaseModel):
     customer_id: int
     customer_wallet: str
     deal_conditions: str
+    deal_proofs: str
     token_address: str
     token_amount: float
     start_date: str
@@ -29,6 +29,7 @@ class BaseOrders(BaseModel):
                 {
                     "customer_id": 1,
                     "customer_wallet": "wallet",
+                    "deal_proofs": "deal_proofs",
                     "deal_conditions": "conditions",
                     "token_address": "address",
                     "token_amount": 100.00,
@@ -41,7 +42,7 @@ class BaseOrders(BaseModel):
 
 
 class Orders(BaseOrders):
-    order_id: UUID
+    order_id: int
     start_date: datetime
     end_date: datetime
 
@@ -52,6 +53,7 @@ class Orders(BaseOrders):
                     "customer_id": 1,
                     "customer_wallet": "wallet",
                     "deal_conditions": "conditions",
+                    "deal_proofs": "deal_proofs",
                     "token_address": "address",
                     "token_amount": 100.00,
                     "start_date": "2022-01-01T12:00:00",
@@ -69,13 +71,13 @@ class GetOrders(Orders):
 
 
 class BaseDeals(BaseModel):
-    order_id: UUID
+    order_id: int
     executor_id: int
     executor_wallet: str
 
 
 class Deals(BaseDeals):
-    deal_id: UUID
+    deal_id: int
 
 
 class GetDeals(Deals):
@@ -84,8 +86,8 @@ class GetDeals(Deals):
 
 
 class DealsHistory(BaseModel):
-    history_deal_id: UUID
-    deal_id: UUID
+    history_deal_id: int
+    deal_id: int
     status: str
 
 

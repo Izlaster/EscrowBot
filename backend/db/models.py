@@ -21,11 +21,11 @@ class Users(Base):
 class Orders(Base):
     __tablename__ = "orders"
 
-    order_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
+    order_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     customer_id: Mapped[int] = mapped_column(Integer, nullable=False)
     customer_wallet: Mapped[str] = mapped_column(Text, nullable=False)
     deal_conditions: Mapped[str] = mapped_column(Text, nullable=False)
-    # deal_proofs: Mapped[str] = mapped_column(Text, nullable=False)
+    deal_proofs: Mapped[str] = mapped_column(Text, nullable=False)
     token_address: Mapped[str] = mapped_column(Text, nullable=False)
     token_amount: Mapped[float] = mapped_column(Numeric(precision=10, scale=7), nullable=False)
     start_date: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
@@ -38,8 +38,8 @@ class Orders(Base):
 class Deals(Base):
     __tablename__ = "deals"
 
-    deal_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    order_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("orders.order_id"), nullable=False)
+    deal_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    order_id: Mapped[int] = mapped_column(Integer, ForeignKey("orders.order_id"), nullable=False)
     executor_id: Mapped[int] = mapped_column(Integer, nullable=False)
     executor_wallet: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=datetime.now(UTC))
@@ -50,7 +50,7 @@ class Deals(Base):
 class DealsHistory(Base):
     __tablename__ = "deals_history"
 
-    history_deal_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid4)
-    deal_id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), default=uuid4)
+    history_deal_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    deal_id: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(length=20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), default=datetime.now(UTC))
