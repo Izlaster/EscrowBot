@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
-from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, GetUser, Orders, User
+from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, GetUser, Orders, User, WalletsTokens
 from services import DealService, OrderService, UserService
 
 router = APIRouter(prefix="", tags=None)
@@ -38,7 +38,7 @@ async def order(order_id: int):
     return order
 
 
-@router.get("/order_with_deal_wallets/{order_id}")
+@router.get("/order_with_deal_wallets/{order_id}", response_model=(WalletsTokens | None))
 async def order_with_deal(order_id: int):
     order_with_deal = await OrderService.get_order_with_deal_wallets_token(order_id=order_id)
 

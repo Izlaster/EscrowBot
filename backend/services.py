@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from db.repositories import deals_history_repository, deals_repository, orders_repository, user_repository
-from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, Orders, User
+from schemas.schemas import BaseDeals, BaseOrders, Deals, GetOrders, Orders, User, WalletsTokens
 
 
 class UserService:
@@ -38,10 +38,13 @@ class OrderService:
         return [GetOrders.model_dump(order) for order in orders]
 
     @staticmethod
-    async def get_order_with_deal_wallets_token(**filters):
-        order_with_deal = await orders_repository.get_order_with_deal_wallets_token(**filters)
+    async def get_order_with_deal_wallets_token(**filters) -> WalletsTokens:
+        order_with_deal_data = await orders_repository.get_order_with_deal_wallets_token(**filters)
+        if order_with_deal_data:
+            order_with_deal = WalletsTokens(**order_with_deal_data)
+            return order_with_deal
 
-        return order_with_deal
+        return None
 
 
 class DealService:

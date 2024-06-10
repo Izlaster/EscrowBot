@@ -42,7 +42,8 @@ class OrdersRepository:
         deal_conditions: str,
         deal_proofs: str,
         token_address: str,
-        token_amount: int,
+        token_amount: float,
+        commission: float,
         start_date: datetime,
         end_date: datetime,
     ):
@@ -54,6 +55,7 @@ class OrdersRepository:
                 deal_proofs=deal_proofs,
                 token_address=token_address,
                 token_amount=token_amount,
+                commission=commission,
                 start_date=start_date,
                 end_date=end_date,
             )
@@ -80,26 +82,29 @@ class OrdersRepository:
     async def get_order_with_deal_wallets_token(self, **filters):
         async with self._session_factory() as session:
             query = (
-                select(Orders.customer_wallet, Deals.executor_wallet, Orders.token_address, Orders.token_amount)
+                select(
+                    Orders.customer_wallet,
+                    Deals.executor_wallet,
+                    Orders.token_address,
+                    Orders.token_amount,
+                    Orders.commission,
+                )
                 .join(Deals, Orders.order_id == Deals.order_id)
                 .filter(Orders.order_id == filters["order_id"])
             )
 
             result = await session.execute(query)
-            result_row = result.fetchone()
+            result_row = result.first()
 
-            if result_row is None:
-                return None
-
-            # Преобразуем строку результата в словарь
-            result_dict = {
-                "customer_wallet": result_row[0],
-                "executor_wallet": result_row[1],
-                "token_address": result_row[2],
-                "token_amount": result_row[3],
-            }
-
-            return result_dict
+            # # Преобразуем строку результата в словарь
+            # result_dict = {
+            #     "customer_wallet": result_row[0],
+            #     "executor_wallet": result_row[1],
+            #     "token_address": result_row[2],
+            #     "token_amount": result_row[3],
+            #     "commission": result_row[4],
+            # }
+            return result_row._asdict() if result_row is not None else None
 
 
 class DealsRepository:

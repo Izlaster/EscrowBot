@@ -20,6 +20,7 @@ class BaseOrders(BaseModel):
     deal_proofs: str
     token_address: str
     token_amount: float
+    commission: float
     start_date: str
     end_date: str
 
@@ -33,6 +34,7 @@ class BaseOrders(BaseModel):
                     "deal_conditions": "conditions",
                     "token_address": "address",
                     "token_amount": 100.00,
+                    "commission": 0.12,
                     "start_date": "01.01.2022 12:00",
                     "end_date": "02.01.2022 12:00",
                 }
@@ -56,6 +58,7 @@ class Orders(BaseOrders):
                     "deal_proofs": "deal_proofs",
                     "token_address": "address",
                     "token_amount": 100.00,
+                    "commission": 0.12,
                     "start_date": "2022-01-01T12:00:00",
                     "end_date": "2022-01-02T12:00:00",
                     "order_id": "77f796d4-71df-4147-af32-06e481fb850e",
@@ -63,6 +66,17 @@ class Orders(BaseOrders):
             ]
         }
     }
+
+
+class WalletsTokens(BaseModel):
+    customer_wallet: str
+    executor_wallet: str
+    token_address: str
+    token_amount: float
+    commission: float
+
+    class Config:
+        orm_mode = True
 
 
 class GetOrders(Orders):
