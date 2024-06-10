@@ -96,14 +96,6 @@ class OrdersRepository:
             result = await session.execute(query)
             result_row = result.first()
 
-            # # Преобразуем строку результата в словарь
-            # result_dict = {
-            #     "customer_wallet": result_row[0],
-            #     "executor_wallet": result_row[1],
-            #     "token_address": result_row[2],
-            #     "token_amount": result_row[3],
-            #     "commission": result_row[4],
-            # }
             return result_row._asdict() if result_row is not None else None
 
 

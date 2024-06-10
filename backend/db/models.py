@@ -1,9 +1,8 @@
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.types import TIMESTAMP, Integer, Numeric, String, Text, Uuid
+from sqlalchemy.types import TIMESTAMP, Integer, Numeric, String, Text
 
 
 class Base(DeclarativeBase):
