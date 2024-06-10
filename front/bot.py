@@ -113,11 +113,12 @@ async def refresh_balance(message: types.Message, state: FSMContext):
                 data_response = await response.json()
 
                 token_amount = data_response["token_amount"]
+                token_price = data_response['token_amount'] + data_response['token_amount'] * data_response['commission']
                 customer_wallet = data_response["customer_wallet"]
                 executor_wallet = data_response["executor_wallet"]
                 token_address = data_response["token_address"]
 
-                if token_amount <= await check_transfers(API_KEY, customer_wallet, OUR_ADDRESS, token_address):
+                if token_price <= await check_transfers(API_KEY, customer_wallet, OUR_ADDRESS, token_address):
                     await message.answer("Баланс обновлен. Закидываю деньги в контракт.")
                     contract = ContractInteraction(OUR_ADDRESS, PRIVATE_KEY, OUR_CONTRACT, SEPOLIA_URL)
                     receipt1 = contract.createDeal(
@@ -157,7 +158,7 @@ async def process_contract_id(message: types.Message, state: FSMContext):
                 data_response = await response.json()
                 await state.update_data(order_id=contract_id, data_response=data_response)
                 await message.answer(
-                    f"Нужно внести депозит {data_response['token_amount']} на адрес 0x122A98f586F19ac7a016280C3eE1FcC79312e465"
+                    f"Нужно внести депозит {data_response['token_amount'] + data_response['token_amount'] * data_response['commission']} на адрес 0x122A98f586F19ac7a016280C3eE1FcC79312e465"
                 )
 
                 refresh_button = [
@@ -279,11 +280,11 @@ async def process_token_amount(message: types.Message, state: FSMContext):
     if user_data["token_address"] == OUR_TOKEN:
         commission = 0.03
         await state.update_data(commission=commission)
-        await state.update_data(token_amount=float(message.text) + float(message.text) * commission)
+        await state.update_data(token_amount=float(message.text))
     else:
         commission = 0.05
         await state.update_data(commission=commission)
-        await state.update_data(token_amount=float(message.text) + float(message.text) * commission)
+        await state.update_data(token_amount=float(message.text))
     await message.answer("Введите дату начала сделки (в формате ДД.ММ.ГГГГ Ч:М):")
     await state.set_state(OrderState.start_date)
 
