@@ -66,28 +66,42 @@ def validate_date(date_text: str) -> bool:
 @dp.message(CommandStart())
 async def start(message: types.Message):
     kb = [
-        [types.KeyboardButton(text="Создать сделку"), types.KeyboardButton(text="Присоединиться к сделке"), types.KeyboardButton(text="Внести депозит в договор"), types.KeyboardButton(text="Просмотр договоров")],
+        [
+            types.KeyboardButton(text="Создать сделку"),
+            types.KeyboardButton(text="Присоединиться к сделке"),
+            types.KeyboardButton(text="Внести депозит в договор"),
+            types.KeyboardButton(text="Просмотр договоров"),
+        ],
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Выберите действие")
     await message.answer("Выберите действие:", reply_markup=keyboard)
+
 
 @dp.message(F.text.lower() == "внести депозит в договор")
 async def deposit_order(message: types.Message, state: FSMContext):
     await message.answer("Введите ID договора:")
     await state.set_state(DepositStates.order_id)
 
+
 @dp.message(F.text.lower() == "просмотр договоров")
 async def deposit_order(message: types.Message, state: FSMContext):
     await message.answer("Введите ID договора:")
     await state.set_state(DepositOrderStates.order_id)
 
+
 @dp.message(F.text.lower() == "вернутся в главное меню")
 async def back_to_start(message: types.Message):
     kb = [
-        [types.KeyboardButton(text="Создать сделку"), types.KeyboardButton(text="Присоединиться к сделке"), types.KeyboardButton(text="Внести депозит в договор"), types.KeyboardButton(text="Просмотр договоров")],
+        [
+            types.KeyboardButton(text="Создать сделку"),
+            types.KeyboardButton(text="Присоединиться к сделке"),
+            types.KeyboardButton(text="Внести депозит в договор"),
+            types.KeyboardButton(text="Просмотр договоров"),
+        ],
     ]
     keyboard = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, input_field_placeholder="Выберите действие")
     await message.answer("Выберите действие:", reply_markup=keyboard)
+
 
 @dp.message(F.text.lower() == "обновить баланс")
 async def refresh_balance(message: types.Message, state: FSMContext):
@@ -98,37 +112,40 @@ async def refresh_balance(message: types.Message, state: FSMContext):
             if response.status == 200:
                 data_response = await response.json()
 
-                token_amount = data_response['token_amount']
-                customer_wallet = data_response['customer_wallet']
-                executor_wallet = data_response['executor_wallet']
-                token_address = data_response['token_address']
-                
+                token_amount = data_response["token_amount"]
+                customer_wallet = data_response["customer_wallet"]
+                executor_wallet = data_response["executor_wallet"]
+                token_address = data_response["token_address"]
+
                 if token_amount <= await check_transfers(API_KEY, customer_wallet, OUR_ADDRESS, token_address):
                     await message.answer("Баланс обновлен. Закидываю деньги в контракт.")
                     contract = ContractInteraction(OUR_ADDRESS, PRIVATE_KEY, OUR_CONTRACT, SEPOLIA_URL)
-                    receipt1 = contract.createDeal(int(contract_id), 
-                                                customer_wallet, executor_wallet, 
-                                                token_address, int(token_amount * 10 ** 18))
+                    receipt1 = contract.createDeal(
+                        int(contract_id), customer_wallet, executor_wallet, token_address, int(token_amount * 10**18)
+                    )
                     tx_link1 = f"https://sepolia.etherscan.io/tx/{receipt1}"
-                    await message.answer(f'Ссылка на транзакцию: \n {tx_link1}')
+                    await message.answer(f"Ссылка на транзакцию: \n {tx_link1}")
                     receipt2 = contract.depositTokens(int(contract_id))
                     tx_link2 = f"https://sepolia.etherscan.io/tx/{receipt2}"
-                    await message.answer(f'Ссылка на транзакцию: \n {tx_link2}')
+                    await message.answer(f"Ссылка на транзакцию: \n {tx_link2}")
                 else:
                     print(await check_transfers(SEPOLIA_URL, customer_wallet, OUR_ADDRESS, token_address))
                     await message.answer("Баланс не обновлен. Подождите и повторите попытку заново.")
             else:
                 await message.answer("Произошла ошибка при обновлении данных. Пожалуйста, попробуйте снова.")
 
+
 @dp.message(F.text.lower() == "создать сделку")
 async def create_order(message: types.Message, state: FSMContext):
     await message.answer("Введите адрес своего кошелька:")
     await state.set_state(OrderState.customer_wallet)
 
+
 @dp.message(F.text.lower() == "присоединиться к сделке")
 async def join_deal(message: types.Message, state: FSMContext):
     await message.answer("Введите ID сделки:")
     await state.set_state(DealState.order_id)
+
 
 @dp.message(DepositStates.order_id)
 async def process_contract_id(message: types.Message, state: FSMContext):
@@ -139,15 +156,20 @@ async def process_contract_id(message: types.Message, state: FSMContext):
             if response.status == 200:
                 data_response = await response.json()
                 await state.update_data(order_id=contract_id, data_response=data_response)
-                await message.answer(f"Нужно внести депозит {data_response['token_amount']} на адрес 0x122A98f586F19ac7a016280C3eE1FcC79312e465")
+                await message.answer(
+                    f"Нужно внести депозит {data_response['token_amount']} на адрес 0x122A98f586F19ac7a016280C3eE1FcC79312e465"
+                )
 
                 refresh_button = [
                     [types.KeyboardButton(text="Обновить баланс"), types.KeyboardButton(text="Вернутся в главное меню")]
                 ]
-                keyboard = types.ReplyKeyboardMarkup(keyboard=refresh_button, resize_keyboard=True, input_field_placeholder="Выберите действие")
+                keyboard = types.ReplyKeyboardMarkup(
+                    keyboard=refresh_button, resize_keyboard=True, input_field_placeholder="Выберите действие"
+                )
                 await message.answer("Выберите действие:", reply_markup=keyboard)
             else:
                 await message.answer("Произошла ошибка при получении данных о договоре. Пожалуйста, попробуйте снова.")
+
 
 @dp.message(F.text.lower() == "подтвердить выполнение задачи")
 async def accept_deal(message: types.Message, state: FSMContext):
@@ -156,7 +178,8 @@ async def accept_deal(message: types.Message, state: FSMContext):
     contract = ContractInteraction(OUR_ADDRESS, PRIVATE_KEY, OUR_CONTRACT, SEPOLIA_URL)
     receipt = contract.completeDeal(int(contract_id))
     tx_link = f"https://sepolia.etherscan.io/tx/{receipt}"
-    await message.answer(f'Ссылка на транзакцию: \n {tx_link}')
+    await message.answer(f"Ссылка на транзакцию: \n {tx_link}")
+
 
 @dp.message(DepositOrderStates.order_id)
 async def process_contract_id(message: types.Message, state: FSMContext):
@@ -167,18 +190,28 @@ async def process_contract_id(message: types.Message, state: FSMContext):
             if response.status == 200:
                 data_response = await response.json()
                 await state.update_data(order_id=contract_id, data_response=data_response)
-                await message.answer(f"ID договора: {contract_id}\nУсловия сделки: {data_response['deal_conditions']}\nДоказательства успешного завершения сделки: {data_response['deal_proofs']}\nАдрес токена: {data_response['token_address']}\nКоличество токенов: {data_response['token_amount']}\nНачало сделки: {data_response['start_date']}\nКонец сделки: {data_response['end_date']}")
+                await message.answer(
+                    f"ID договора: {contract_id}\nУсловия сделки: {data_response['deal_conditions']}\nДоказательства успешного завершения сделки: {data_response['deal_proofs']}\nАдрес токена: {data_response['token_address']}\nКоличество токенов: {data_response['token_amount']}\nНачало сделки: {data_response['start_date']}\nКонец сделки: {data_response['end_date']}"
+                )
                 refresh_button = [
-                    [types.KeyboardButton(text="Подтвердить выполнение задачи"), types.KeyboardButton(text="Вызвать администрацию"), types.KeyboardButton(text="Вернутся в главное меню")]
+                    [
+                        types.KeyboardButton(text="Подтвердить выполнение задачи"),
+                        types.KeyboardButton(text="Вызвать администрацию"),
+                        types.KeyboardButton(text="Вернутся в главное меню"),
+                    ]
                 ]
-                keyboard = types.ReplyKeyboardMarkup(keyboard=refresh_button, resize_keyboard=True, input_field_placeholder="Выберите действие")
+                keyboard = types.ReplyKeyboardMarkup(
+                    keyboard=refresh_button, resize_keyboard=True, input_field_placeholder="Выберите действие"
+                )
                 await message.answer("Выберите действие:", reply_markup=keyboard)
+
 
 @dp.message(DealState.order_id)
 async def process_order_id(message: types.Message, state: FSMContext):
     await state.update_data(order_id=message.text)
     await message.answer("Введите адрес своего кошелька:")
     await state.set_state(DealState.executor_wallet)
+
 
 @dp.message(DealState.executor_wallet)
 async def process_executor_wallet(message: types.Message, state: FSMContext):
@@ -198,7 +231,7 @@ async def process_executor_wallet(message: types.Message, state: FSMContext):
                 await message.answer(f"Договор успешно подписан: {data_response['order_id']}")
             else:
                 await message.answer("Произошла ошибка при создании сделки.")
-    # response = requests.post("http://127.0.0.1:8000/register_deal", json=deal_info, timeout=10)
+        # response = requests.post("http://127.0.0.1:8000/register_deal", json=deal_info, timeout=10)
 
         async with aiohttp.ClientSession() as session:
             async with session.get(f"http://127.0.0.1:8000/order/{user_data['order_id']}", timeout=10) as response:
@@ -211,11 +244,13 @@ async def process_executor_wallet(message: types.Message, state: FSMContext):
 
     await state.clear()
 
+
 @dp.message(OrderState.customer_wallet)
 async def process_order_c_wallet(message: types.Message, state: FSMContext):
     await state.update_data(customer_wallet=message.text)
     await message.answer("Введите условия сделки:")
     await state.set_state(OrderState.order_conditions)
+
 
 @dp.message(OrderState.order_conditions)
 async def process_order_conditions(message: types.Message, state: FSMContext):
@@ -230,21 +265,28 @@ async def process_order_proofs(message: types.Message, state: FSMContext):
     await message.answer("Введите адрес токена:")
     await state.set_state(OrderState.token_address)
 
+
 @dp.message(OrderState.token_address)
 async def process_token_address(message: types.Message, state: FSMContext):
     await state.update_data(token_address=message.text)
     await message.answer("Введите количество токенов:")
     await state.set_state(OrderState.token_amount)
 
+
 @dp.message(OrderState.token_amount)
 async def process_token_amount(message: types.Message, state: FSMContext):
     user_data = await state.get_data()
     if user_data["token_address"] == OUR_TOKEN:
-        await state.update_data(token_amount=float(message.text) + float(message.text) * 0.03)
+        commission = 0.03
+        await state.update_data(commission=commission)
+        await state.update_data(token_amount=float(message.text) + float(message.text) * commission)
     else:
-        await state.update_data(token_amount=float(message.text) + float(message.text) * 0.05)
+        commission = 0.05
+        await state.update_data(commission=commission)
+        await state.update_data(token_amount=float(message.text) + float(message.text) * commission)
     await message.answer("Введите дату начала сделки (в формате ДД.ММ.ГГГГ Ч:М):")
     await state.set_state(OrderState.start_date)
+
 
 @dp.message(OrderState.start_date)
 async def process_order_start_date(message: types.Message, state: FSMContext):
@@ -255,6 +297,7 @@ async def process_order_start_date(message: types.Message, state: FSMContext):
     await state.update_data(start_date=message.text)
     await message.answer("Введите дату завершения сделки (в формате ДД.ММ.ГГГГ Ч:М):")
     await state.set_state(OrderState.end_date)
+
 
 @dp.message(OrderState.end_date)
 async def process_order_end_date(message: types.Message, state: FSMContext):
@@ -279,6 +322,7 @@ async def process_order_end_date(message: types.Message, state: FSMContext):
         "deal_proofs": user_data["order_proofs"],
         "token_address": user_data["token_address"],
         "token_amount": user_data["token_amount"],
+        "commission": user_data["commission"],
         "start_date": user_data["start_date"],
         "end_date": end_date,
     }
