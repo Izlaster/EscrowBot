@@ -10,7 +10,7 @@ cd backend
 
 poetry shell
 
-poetry upgrade
+poetry install
 
 cd ../local_database && docker compose up -d
 
@@ -24,7 +24,7 @@ cd front
 
 poetry shell
 
-poetry upgrade
+poetry install
 
 python bot.py
 ```
