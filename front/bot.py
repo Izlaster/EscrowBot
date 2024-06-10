@@ -16,13 +16,13 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from checker import check_transfers
 from contract import *
 
-API_TOKEN = "6500720809:AAEvo7PhRABBy9BYShF3w-snSId0V5k60-Y"
-OUR_CONTRACT = "0xb204de841947f2e4B40A3826adAbBC5233BA96C7"
-OUR_TOKEN = "0x51418909821a7b738bf147f927a4CaB82806619e"
-OUR_ADDRESS = "0x122A98f586F19ac7a016280C3eE1FcC79312e465"
-SEPOLIA_URL = "https://sepolia.infura.io/v3/bcabb330906244d39180c6d0c9c2bd06"
-API_KEY = "2R8GNBSERWEUSE3HZJMKJBR2MMKWGTSMGM"
-PRIVATE_KEY = "29f7abe571d130ffa4c2f261d7a189eecef84ecaf8825a3910c1a85047b3569b"
+API_TOKEN = ""
+OUR_CONTRACT = ""
+OUR_TOKEN = ""
+OUR_ADDRESS = ""
+SEPOLIA_URL = ""
+API_KEY = ""
+PRIVATE_KEY = ""
 
 bot = Bot(token=API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
@@ -139,7 +139,7 @@ async def process_contract_id(message: types.Message, state: FSMContext):
             if response.status == 200:
                 data_response = await response.json()
                 await state.update_data(order_id=contract_id, data_response=data_response)
-                await message.answer(f"Нужно внести депозит {data_response['token_amount']}")
+                await message.answer(f"Нужно внести депозит {data_response['token_amount']} на адрес 0x122A98f586F19ac7a016280C3eE1FcC79312e465")
 
                 refresh_button = [
                     [types.KeyboardButton(text="Обновить баланс"), types.KeyboardButton(text="Вернутся в главное меню")]
@@ -167,7 +167,7 @@ async def process_contract_id(message: types.Message, state: FSMContext):
             if response.status == 200:
                 data_response = await response.json()
                 await state.update_data(order_id=contract_id, data_response=data_response)
-                await message.answer(f'''{contract_id}\n{data_response['deal_conditions']}\n{data_response['deal_proofs']}\n{data_response['token_address']}\n{data_response['token_amount']}\n{data_response['start_date']}\n{data_response['end_date']} \n''')
+                await message.answer(f"ID договора: {contract_id}\nУсловия сделки: {data_response['deal_conditions']}\nДоказательства успешного завершения сделки: {data_response['deal_proofs']}\nАдрес токена: {data_response['token_address']}\nКоличество токенов: {data_response['token_amount']}\nНачало сделки: {data_response['start_date']}\nКонец сделки: {data_response['end_date']}")
                 refresh_button = [
                     [types.KeyboardButton(text="Подтвердить выполнение задачи"), types.KeyboardButton(text="Вызвать администрацию"), types.KeyboardButton(text="Вернутся в главное меню")]
                 ]
@@ -194,8 +194,8 @@ async def process_executor_wallet(message: types.Message, state: FSMContext):
     async with aiohttp.ClientSession() as session:
         async with session.post("http://127.0.0.1:8000/register_deal", json=deal_info, timeout=10) as response:
             if response.status == 201:
-                data_response = await response.text()
-                await message.answer(f"Договор успешно подписан:\n{data_response}")
+                data_response = await response.json()
+                await message.answer(f"Договор успешно подписан: {data_response['order_id']}")
             else:
                 await message.answer("Произошла ошибка при создании сделки.")
     # response = requests.post("http://127.0.0.1:8000/register_deal", json=deal_info, timeout=10)
@@ -286,8 +286,10 @@ async def process_order_end_date(message: types.Message, state: FSMContext):
     async with aiohttp.ClientSession() as session:
         async with session.post("http://127.0.0.1:8000/register_order", json=order_info, timeout=10) as response:
             if response.status == 201:
-                data_response = await response.text()
-                await message.answer(f"Сделка успешно создана:\n{data_response}")
+                data_response = await response.json()
+                await message.answer(
+                    f"Сделка успешно создана:\nID сделки: {data_response['order_id']}\nУсловия сделки: {data_response['deal_conditions']}\nДоказательства успешного завершения сделки: {data_response['deal_proofs']}\nАдрес токена: {data_response['token_address']}\nКоличество токенов: {data_response['token_amount']}\nНачало сделки: {data_response['start_date']}\nКонец сделки: {data_response['end_date']}"
+                )
             else:
                 await message.answer("Произошла ошибка при создании сделки.")
     # response = requests.post("http://127.0.0.1:8000/register_order", json=order_info, timeout=10)
